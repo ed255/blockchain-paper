@@ -110,7 +110,7 @@ set the global level with the identifying number of 0, and decrement by one at
 each sub-level.
 
 An important note on the divisions is that unlike other
-works~\cite{unchain}light we don't require proof of location.  Regions are made
+works~\cite{unchain} we don't require proof of location.  Regions are made
 in order to divide the workload of transactions, with the idea of having local
 regions working on validating and accepting transactions happening on the local
 area; but this must be seen only as a convention to split the work (following
@@ -151,11 +151,15 @@ all regions in all levels.  This global Blockchain would be forked by the
 cities and periodically merged up in the hierarchy with the forks of the
 neighboring regions (at different intervals depending on the level) until
 reaching the global level, at which point the process would start again
-periodically.
+periodically.  Figure~\ref{fig:fork-merge} shows the workflow of this process.
 
 \begin{figure}
-\includegraphics[height=1.8in, width=1.8in]{rosette}
-\caption{Figure of forks and merges.}
+\includegraphics[width=3.5in]{figure_fork_merge}
+\caption{Workflow of forks and merges across the different levels of the
+hierarchy.  Block transactions are only shown after the cities fork from the
+global chain for simplicity: block transactions are created at the local level
+after every merge-fork step, sown as gray dots in the figure.}
+\label{fig:fork-merge}
 \end{figure}
 
 The following table presents a proposal for interval times for merges at each
@@ -192,13 +196,19 @@ Non-local transactions would be published on the local blockchain of the
 sender's wallet, but wouldn't be able to be confirmed by the receiver
 immediately.  The receiver would have to wait until the sender's city fork gets
 merged with their own city fork, a delay that depends on the lowest common
-ancestor in the hierarchy.  The following figure shows two examples of
+ancestor in the hierarchy.  Figure~\ref{fig:non-local-tx} shows two examples of
 non-local transactions, and the required time for the receiver to be able to
 confirm them.
 
 \begin{figure}
-\includegraphics[height=1.8in, width=1.8in]{rosette}
-\caption{Figure of non-local transactions.}
+\includegraphics[trim={0 0.8in 0 0.4in},clip,width=3.5in]{non-local-tx}
+\caption{On the left, Alice (from \textit{Los Angeles}) makes a transaction to
+Bob (in \textit{Santa Monica}).  Bob has to wait 10 minutes for the \textit{Los
+Angeles} fork to be merged into the \textit{California} merge.  On the right,
+Alice (from \textit{Los Angeles}) makes a transaction to Bokkai (in
+\textit{Tokyo}).  Bokkai has to wait 24 hours for the transaction to reach the
+\textit{Global} merge.}
+\label{fig:non-local-tx}
 \end{figure}
 
 For our design, blockchain city-forks would be distinguished by a tag, so that
@@ -256,13 +266,21 @@ blockchain wallets: \textit{superwallets} have the characteristic that they
 group many wallets underneath.  Moreover, since transactions between
 \textit{superwallets} represent transactions of lower level wallets, these
 transactions would need to carry extra information about the sender and
-receiver of each locally originated transaction.  The following figure should
-help clarifying this idea by sowing some examples of transactions in this
-model:
+receiver of each locally originated transaction.  Figure~\ref{fig:superwallet}
+should help clarify this idea by sowing some examples of transactions in
+this model.
 
 \begin{figure}
-\includegraphics[height=1.8in, width=1.8in]{rosette}
-\caption{Figure.}
+\includegraphics[trim={0 1.8in 0 0.4in},clip,width=3.5in]{superwallet}
+\caption{The \textit{Los Angeles} block contains three transactions, out of which
+one is local and two have recipients in \textit{Santa Monica}.  Non-local
+transactions go up into the hierarchy to the State level.  In the California
+block only one transaction is shown, which corresponds to the non-local
+transactions originated at \textit{Los Angeles}, grouped under a single
+superwallet.  The \textit{Santa Monica} block takes the transaction received by
+the \textit{Santa Monica} supwerallet and decomposes them into individual
+transactions.}
+\label{fig:superwallet}
 \end{figure}
 
 In this model, mining nodes could decide to work on the blockchains at
