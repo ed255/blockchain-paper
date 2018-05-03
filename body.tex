@@ -3,21 +3,27 @@
 
 Current decentralized cryptocurrencies based on blockchains suffer from a
 scalability problem that makes them unfit to replace centralized payment
-systems such as VISA and PayPal.
+systems such as VISA and PayPal: the transaction throughputs of
+cryptocurrencies is far from reaching that required for fiat currency
+transactions.
 
-We propose an idea to achieve a higher scalability than current
-cryptocurrencies by creating a hierarchy of transaction regions at different
-levels, in which the transactions have different properties depending on the
-lowest level ancestor region.
+In this work, we propose an idea to achieve a higher scalability than current
+cryptocurrencies by creating a tree hierarchy of transaction regions at
+different levels, in which the transactions show different properties (in terms
+of cost and delay) depending on the lowest level ancestor in the tree of
+the sender and receiver.
+
+We suggest using 4 levels in the hierarchy: \textit{Global, Country, State, City}.
 
 Our first proposal is for each lowest level to work on a fork of a global
-common blockchain, that would be merged with sibling zones (those under the
+common blockchain, that would be merged with sibling regions (those under the
 same parent) periodically up in the hierarchy, with the periodicity being
-different at each level.  The periodicity would be lower on higher level zones.
+different at each level.  The periodicity would be lower on higher level regions,
+and decrease for lower regions.
 
-Transactions within the lowest level zones would be applied and verified
-immediately whereas those traversing zones would only be confirmed by receivers
-once the forks of the corresponding zones are merged.
+Transactions within the lowest level regions would be applied and verified
+quickly in a local blockchain whereas those traversing regions would only be
+confirmed by receivers once the forks of the corresponding regions are merged.
 
 Our second proposal improves the efficiency of the first proposal by only
 requiring transactions that cross regions to be processed at higher levels in
@@ -25,10 +31,8 @@ the hierarchy.  Each region at each level would have a separate blockchain that
 would represent the underlying regions as a single \textit{superwallet}, except
 for the local regions which would have a blockchain with regular wallets.
 
-We suggest using 4 levels: Global, Country, State, City.
-
 These designs would allow the transaction throughput within a single city to
-achieve a similar throughput as current blockchains do globally.
+achieve a throughput close to what current blockchains achieve globally.
 
 In other words, we are optimizing transaction delays by distance, which is a
 common expectation of fiat transactions, while allowing the global transaction
@@ -72,7 +76,7 @@ However this is not enough to meet the needs of fiat currency.  Nowadays,
 Paypal processes 193 transactions per second and Visa 2000 (with a capability
 of 24,000). The majority of all transactions are local transaction (people do
 fiat currency transactions locally more often than to outside places). This
-fact pushed us to the idea of scaling blockchain by leveled zones.
+fact pushed us to the idea of scaling blockchain by leveled regions.
 
 % Eduard
 \section{Scaling with leveled regions}
@@ -80,7 +84,7 @@ fact pushed us to the idea of scaling blockchain by leveled zones.
 The main idea behind our proposal is to scale a decentralized transaction
 system by removing the load nodes require to maintain the global data structure
 that is the blockchain.  In order to remove this load, and thus allow an
-increase of transaction throughput, we divide the the work into a hierarchy,
+increase of transaction throughput, we divide the work into a hierarchy,
 which for practical purposes is based on geographical regions.  The following
 subsections will explain the different design choices of the system based on
 the Divide and Conquer approach used in algorithm design.
@@ -151,18 +155,18 @@ all regions in all levels.  This global Blockchain would be forked by the
 cities and periodically merged up in the hierarchy with the forks of the
 neighboring regions (at different intervals depending on the level) until
 reaching the global level, at which point the process would start again
-periodically.  Figure~\ref{fig:fork-merge} shows the workflow of this process.
+periodically.  Figure~\ref{fig:fork-merge} shows the work flow of this process.
 
 \begin{figure}
-\includegraphics[width=3.5in]{figure_fork_merge}
-\caption{Workflow of forks and merges across the different levels of the
+\includegraphics[trim={0.18in 0 0 0},clip,width=3.5in]{figure_fork_merge}
+\caption{Work flow of forks and merges across the different levels of the
 hierarchy.  Block transactions are only shown after the cities fork from the
 global chain for simplicity: block transactions are created at the local level
 after every merge-fork step, sown as gray dots in the figure.}
 \label{fig:fork-merge}
 \end{figure}
 
-The following table presents a proposal for interval times for merges at each
+Table~\ref{tab:levels} presents a proposal for interval times for merges at each
 level.  In practice, these numbers would need to be tested with a simulation of
 transactions to guarantee that they are allow the merging process to happen
 without overlapping with the next iteration :
@@ -178,6 +182,7 @@ Country & (-1) & 2 hours \\
 Global  & (0)  & 24 hours \\
 \end{tabular}
 \caption{Geographical levels and their merging periodicity}
+\label{tab:levels}
 \end{table}
 
 Transactions made by users would only be published on the local Blockchains,
@@ -201,7 +206,7 @@ non-local transactions, and the required time for the receiver to be able to
 confirm them.
 
 \begin{figure}
-\includegraphics[trim={0 0.8in 0 0.4in},clip,width=3.5in]{non-local-tx}
+\includegraphics[trim={0.1in 0.8in 0.1in 0.4in},clip,width=3.5in]{non-local-tx}
 \caption{On the left, Alice (from \textit{Los Angeles}) makes a transaction to
 Bob (in \textit{Santa Monica}).  Bob has to wait 10 minutes for the \textit{Los
 Angeles} fork to be merged into the \textit{California} merge.  On the right,
@@ -271,7 +276,7 @@ should help clarify this idea by sowing some examples of transactions in
 this model.
 
 \begin{figure}
-\includegraphics[trim={0 1.8in 0 0.4in},clip,width=3.5in]{superwallet}
+\includegraphics[trim={0.1in 1.8in 0.1in 0.4in},clip,width=3.5in]{superwallet}
 \caption{The \textit{Los Angeles} block contains three transactions, out of which
 one is local and two have recipients in \textit{Santa Monica}.  Non-local
 transactions go up into the hierarchy to the State level.  In the California
@@ -283,7 +288,7 @@ transactions.}
 \label{fig:superwallet}
 \end{figure}
 
-In this model, mining nodes could decide to work on the blockchains at
+In this model, mining nodes could theoretically decide to work on the blockchains at
 different levels.  Ideally, and to make things simpler, each node would work at
 each level (in the corresponding nested regions it belongs to).  This would
 help linking a node to a local wallet in which the node would receive the
@@ -299,20 +304,20 @@ levels.  Not all nodes may be capable enough to verify merges at every level,
 Flexibility in the amount of contribution by node may be required.
 
 * When a node performs a merge, it needs to verify the forks of the sibling
-zones for correctness.  This could require a lot of computation resources.  A
+regions for correctness.  This could require a lot of computation resources.  A
 possible optimization would be that each merge outputs a compressed form of the
 result that makes verification at the next level faster.
 
-* At the lowest level, each zone would have a small number of nodes.  This
-opens the possibility of an attacker disrupting the zone by registering nodes
+* At the lowest level, each region would have a small number of nodes.  This
+opens the possibility of an attacker disrupting the region by registering nodes
 in it with high validation weight (either computational power or stake).  Such
 disruption could be a denial of service or a denial of selected transactions.
 
-* A way to make make sure that all zones have the same computing power could be
+* A way to make make sure that all regions have the same computing power could be
 useful to solve this.
 
 * A different approach would consist on restricting how easily new nodes with
-high computational power can join or switch zones.
+high computational power can join or switch regions.
 
 * At each level, the merging time between forks should be faster than the
 periodicity of merges.
@@ -324,7 +329,7 @@ periodicity of merges.
 
 This is a proposal~\cite{unchain} that tries to solve the current scalability
 issues of public blockchain based technologies.  Very similar to our approach,
-the authors design a hierarchical division based on geospatial regions.  Each
+the authors design a hierarchical division based on geographical regions.  Each
 region at each level would have a different and independent blockchain such
 that local transactions happen in the local blockchain associated with the
 geographical area.  Farther transactions require multiple transactions to move
@@ -340,9 +345,9 @@ geographical area where the cryptocurrency is deployed.  This corroborators
 consist of antennas that have the capability of issuing certificates to parties
 after they have verified their proximity (by analyzing the communication
 latency).  The algorithm to select which miner creates the next block in the
-blockchain consist of the publication of a random corroborator antena, so that
+blockchain consist of the publication of a random corroborator antenna, so that
 the miner who can prove to be the closest (in distance, or latency) to the
-antena wins (and gets to create the block).  Location certificates can also
+antenna wins (and gets to create the block).  Location certificates can also
 improve the security from the regular users point of view by means of
 geofencing their wallet, such that the coins in it can only be spent from a
 particular geographical area.  The authors devise a business model behind the
@@ -374,8 +379,8 @@ Rather than creating a hierarchy of transactions, this solution creates a
 single off-chain protocol in which a group of parties can do an unlimited
 number of transactions, which is connected to the blockchain through only two
 transactions.  The first blockchain transaction is a payment that the parties
-make to a chanel wallet and the second transaction is a payment from such
-chanel wallet back to the participants according to the final balance of each
+make to a channel wallet and the second transaction is a payment from such
+channel wallet back to the participants according to the final balance of each
 party in the off-chain transaction state.
 
 Whereas initial proposals like the Lightning Network~\cite{light} or the work of
